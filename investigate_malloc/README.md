@@ -45,5 +45,5 @@ When sys\_brk() is called with NULL argument, it returns the value of brk field.
 
 Next it passes that address as the argument to sys\_brk(address), and at this point the kernel validates that there are no memory overlaps, aligns the address to PAGE\_SIZE(generally 4KB) and does some housekeeping.
 
-If successful it returns the new end of heap address which in my case was '0x55ff09564000'. The dynamic memory requested will be in between the oldbrk and newbrk values. As can be inferred, heaps grow upwards in memory, for x86 architecture. 
+If successful it returns the new end of heap address which in my case was '0x55ff09564000'. The dynamic memory requested by malloc will be in between the oldbrk and newbrk values(that is within the valid heap memory being tracked by the Kernel). As can be inferred, heaps grow upwards in memory, for x86 architecture. 
 
