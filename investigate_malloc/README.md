@@ -18,9 +18,12 @@ user----invokes---\> malloc() ----invokes----\> brk() ----invokes----\> sys\_brk
 
 First things, a process is a program in execution. That means, the program is read from a file(normally in disk) and loaded into memory(RAM). 
 The file is an ELF executable(not important for now), which organizes the program into segments:
+
 Data segment
+
 Code/Text segment
-Stack segment
+
+Read only data segment
 
 These same sections are also loaded into memory. But who keeps track of all these details? This is where the Linux Kernel comes in.
 The Kernel has a structure for each process called 'mm', which stands for memory management.
