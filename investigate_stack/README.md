@@ -1,5 +1,6 @@
 # Investigations into a stack call
 
+The following code was obtained by, disassembling the executable generated from the call_afunc.c, using the GNU tool 'objdump'.
 ```
 0000000000001129 <add_vars>:
     1129:	f3 0f 1e fa          	endbr64
@@ -37,7 +38,7 @@
 # Introducing the registers
 
 ```
-rbp - Frame pointer
+rbp - Frame pointer/Base pointer
 rsp - Stack pointer
 eax, edx, edi, esi - General purpose registers
 eip - Instruction pointer register
@@ -61,14 +62,14 @@ The second instruction is
 ```
 1145:   55                      push   %rbp
 ```
-This pushes the current frame pointer onto the stack and decrements the rsp value by 8(for 64bit system, addresses are 8 bytes). <br>
+This pushes the previous frame pointer rbp(or also called base pointer) onto the stack and decrements the rsp value by 8(for 64bit system, addresses are 8 bytes). <br>
 Also note that the stack grows downward for x86 system. <br>
 
 ```
    1146:   48 89 e5                mov    %rsp,%rbp
 ```
 Here the stack pointer is copied to frame pointer register. Thus this is the beginning of the main function stack frame. <br>
-So in effect, there will be multiple frames within a stack along with nested frames(in case of nested function calls).
+So in effect, there will be multiple frames within a stack including nested frames(in case of nested function calls).
 
 ```
 1149:   48 83 ec 10             sub    $0x10,%rsp
@@ -83,7 +84,7 @@ Subtracts the stack pointer by 16 bytes.
 
 ```
 Copy the constant values 10 and 5 onto the stack(local variables 'a' and 'b') and also copy it onto 2 GPR's edx and eax. <br>
-As can be seen, either rsp or rbp can be used as a reference point. 
+As can be seen, either 'rsp' or 'rbp' can be used as a reference point to address other locations on the stack. 
 
 ```
     1161:	89 d6                	mov    %edx,%esi
@@ -94,7 +95,7 @@ Copy the values as arguments to the function call. In this case using 2 register
 ```
     1165:	e8 bf ff ff ff       	callq  1129 <add_vars>
 ```
-Call the function at address 1129(which is add\_vars).
+Call the function at address 1129(which is add\_vars). <br>
 The callq will automatically store the next eip value(116a) onto the stack before jumping to the new function.
 
 # add\_vars function instructions
@@ -103,7 +104,7 @@ The callq will automatically store the next eip value(116a) onto the stack befor
     112d:	55                   	push   %rbp
     112e:	48 89 e5             	mov    %rsp,%rbp
 ```
-Similar to before, the base frame pointer of the main function(previous stack frame) is copied onto the stack, esp is then decremented by 8. <br>
+Similar to before, the base stack frame pointer of the main function(previous stack frame) is copied onto the stack, rsp is then decremented by 8. <br>
 After which, the new rsp is copied to rbp, and this becomes the base stack frame pointer to the add\_vars stack frame.
 
 ```
@@ -112,7 +113,7 @@ After which, the new rsp is copied to rbp, and this becomes the base stack frame
     1137:	8b 55 fc             	mov    -0x4(%rbp),%edx
     113a:	8b 45 f8             	mov    -0x8(%rbp),%eax
 ```
-The two arguments are copied from the register onto the stack.
+The two arguments are copied from the register(edi and esi) onto the stack. <br>
 From stack they are copied onto 2 registers(edx and eax) which will be used for arithmetic instruction
 
 ```
@@ -123,19 +124,21 @@ Add the 2 values and store the result in eax register.
     113f:	5d                   	pop    %rbp
     1140:	c3                   	retq
 ```
-Pop the top of stack and store it in the base frame pointer. Increment sp=sp+8
-rsp now points to stack location containing return instruction pointer(116a).
-retq instruction will pop this value and store it in eip register. 
-Thus the next instruction will be at adress 116a.
+Pop the top of stack and store it in the base frame pointer. Increment rsp=rsp+8 <br>
+rsp now points to stack location containing return instruction pointer(116a). <br>
+retq instruction will pop this value from the stack, and store it in eip register.  <br>
+Thus, the next instruction will be at adress 116a.
 
 # Back to main function
 ```
     116a:	89 45 f8             	mov    %eax,-0x8(%rbp)
     116d:	b8 00 00 00 00       	mov    $0x0,%eax
 ```
-eax contains the return value from the add\_vars function.
-This overwrites the previous value of variable 'a', which is what we expect since (a = add\_vars(a, b)).
-Clear the value in the eax register. 
+eax register holds the return value from the add\_vars function. <br>
+This is moved to location -0x8(%rbp), overwriting the previous value of variable 'a', which is what we expect since (a = add\_vars(a, b)). <br>
+Clear the value in the eax register. <br>
 
-These are the important instructions that display the stack handling part of the program. 
+These are the important instructions that display the stack handling part of the program. <br>
+Upon a function call, it saves the next instruction pointer, and passes arguments to the called function. <br>
+The called function, deals with preserving the previous stack frame base values, with reading the function arguments, and upon return copying the return instruction pointer to the eip register. 
 
