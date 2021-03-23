@@ -1,6 +1,7 @@
 # Investigations into a stack call
 
-The following code was obtained by, disassembling the executable generated from the call_afunc.c, using the GNU tool 'objdump'.
+**Investigating stack handling during a function call, on an x86-64 architecture.** <br>
+The following code was obtained by, disassembling the executable generated from the call\_afunc.c, using the GNU tool 'objdump'.
 ```
 0000000000001129 <add_vars>:
     1129:	f3 0f 1e fa          	endbr64
