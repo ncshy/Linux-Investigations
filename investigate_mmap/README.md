@@ -36,3 +36,8 @@ If MAP_PRIVATE was specified instead in mmap arguments, then the file would stil
 
 For files on disk, the core mmap is supported by the filesystem support code in the kernel. Shared libraries(ELF shared object) have their segments mapped onto process memory space using mmap. <br>
 It's not only files that can be mapped, even HW device memory can be mapped. The core mmap logic will be provided by the Device Driver for that device.
+
+To briefly touch on the core mmap logic, the responsibility includes, obtaining the virtual address that will be returned, altering the process page table such that the virtual address will point to the page frame that represents the file. <br>
+That is, a page cache exists to provide an in-memory copy of a file on disk. There is a page frame within that cache that represents the file being requested. Thus the mapping has to be between virtual address and this page frame. <br>
+If MAP_PRIVATE was used in the mmap call, and a write was attempted, the page frame contents are copied to a new page frame and the page table has to adjusted once more. virtual address ----> new_page_frame <br>
+Since this new page frame is not backed by the main file, writes are not reflected on the main file on disk.
