@@ -51,7 +51,7 @@ mov - Moves data between registers
 movl - Move a raw value to register
 sub - Subtracts value from a register and stores result in the rightmost argument
 add - Adds register values, stores result in rightmost argument
-push - Push the argument onto the stack and then decrement rsp
+push - Decrement rsp and push the argument onto the stack
 pop - Pop the element on the stack pointed to by rsp, store it in the argument, then increment rsp 
 callq - Store current instruction pointer onto stack, and jump to address specified
 retq - Pop value in stack pointed to by esp, store it in eip, then increment rsp
@@ -63,7 +63,7 @@ The second instruction is
 ```
 1145:   55                      push   %rbp
 ```
-This pushes the previous frame pointer rbp(or also called base pointer) onto the stack and decrements the rsp value by 8(for 64bit system, addresses are 8 bytes). <br>
+This  decrements the rsp value by 8(for 64bit system, addresses are 8 bytes) and pushes the previous frame pointer rbp(or also called base pointer) onto the stack.<br>
 Also note that the stack grows downward for x86 system. <br>
 
 ```
@@ -97,7 +97,7 @@ Copy the values as arguments to the function call. In this case using 2 register
     1165:	e8 bf ff ff ff       	callq  1129 <add_vars>
 ```
 Call the function at address 1129(which is add\_vars). <br>
-The callq will automatically store the next eip value(116a) onto the stack before jumping to the new function.
+The callq will automatically decrement the rsp pointer by 8 and store the next eip value(116a) onto the stack before jumping to the new function.
 
 # add\_vars function instructions
 
@@ -105,7 +105,7 @@ The callq will automatically store the next eip value(116a) onto the stack befor
     112d:	55                   	push   %rbp
     112e:	48 89 e5             	mov    %rsp,%rbp
 ```
-Similar to before, the base stack frame pointer of the main function(previous stack frame) is copied onto the stack, rsp is then decremented by 8. <br>
+Similar to before, rsp is decremented by 8 and then the base stack frame pointer of the main function(previous stack frame) is copied onto the stack.<br>
 After which, the new rsp is copied to rbp, and this becomes the base stack frame pointer to the add\_vars stack frame.
 
 ```
