@@ -142,6 +142,6 @@ This is moved to location -0x8(%fp), overwriting the previous value of variable 
 Clear the value in the r0 register. <br>
 
 These are the important instructions that display the stack handling part of the program. <br>
-Upon a function call, it saves the next instruction pointer, and passes arguments to the called function. <br>
-The called function, deals with preserving the previous stack frame base values, with reading the function arguments, and upon return copying the return instruction pointer to the eip register. 
+Upon a function call, it saves the next pc value to lr register, and passes arguments to the called function. <br>
+The called function, deals with preserving the previous stack frame base values, with reading the function arguments, and upon return copying the lr register to the pc register. 
 
