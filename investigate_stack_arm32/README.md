@@ -53,8 +53,8 @@ sub - Subtracts 3rd argument from 2nd argument value and stores result in the le
 add - Adds register values, stores result in leftmost argument
 push - Decrement sp by 4*(no.of arguments) and push the argument onto the stack in order.
 pop - Pop the element on the stack pointed to by sp, store it in the argument, then increment sp 
-bl - Store current instruction pointer onto stack, and jump to address specified
-bx - Pop value in stack pointed to by sp, store it in lr, then increment sp
+bl - Store next pc value onto lr, and jump to address specified
+bx - Copy value in lr and store it in pc.
 
 ```
 # Main function instructions
