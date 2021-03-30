@@ -13,6 +13,7 @@ sudo ip link addr add 192.168.10.14/24 dev vxlan20
 sudo ip link set dev vxlan20 up
 
 ```
+**Setup:**<br>
 The above steps create a VXLAN interface called vxlanif on Host 1. The VID for this interface is 20. It will use eth0 physical interface to send packets on the wire to a host with remote IP address of 192.168.0.100. <br>
 The interface vxlanif is provided a static IP address of 192.168.10.2 <br>
 
@@ -58,16 +59,18 @@ The result of sending a ping request is shown below.
 	0x0090:  3435 3637                                                               0x0090:  |             ICMP DATA                     |
 
 ```
-The best way to understand this packet is from the bottom up. 
-
+**Explaining the Packet structure:**<br>
+The best way to understand this packet is from the bottom up. <br>
 There is an ICMP Payload (ICMP Data) and ICMP header that is encapsulated inside an IP payload. This IP refers to the packet from 192.168.10.2 > 192.168.10.14 , that is the communication between the 2 vxlan interfaces. <br>
 This entire ICMP packet(including IP headers and Ethernet headers) is thus the VXLAN payload and as such a VXLAN header is attached onto this packet. <br>
 The VXLAN packet is in turn embedded into an outer packet that uses a UDP connection. The UDP payload is this VXLAN packet and it has it's UDP header and IP layer that refers to the transmission from 192.168.0.4:<some port> > 192.168.0.100:4789 <br>
 
+**The receving side:**<br>
 On the receiving end, the interface with MAC address 58:96:1d:10:85:bf and IP 192.168.0.100 receives the packet, removes the outer Ethernet and IP headers and passes the packet upward to the UDP port 4789. <br>
 The UDP payload is then sent to VXLAN interface(vxlan20) with VXLAN id 20(information embedded within the VXLAN HDR). <br>
 This interface than strips the inner Ethernet headers and IP headers and passes it to the kernel for ICMP processing. <br>
 
+**VXLAN summary:**<br>
 So in effect 2 interfaces(vxlanif and vxlan20) on the same subnet(192.168.10.0/24) are created on top of an L3 connection between 2 hosts(192.168.0.4 and 192.168.0.100). <br>
 In my example the 2 underlying hosts were on the same subnet, but this does not have to be the case. The L3 connection could be between 2 hosts on completely different networks, yet still having the 2 vxlan interfaces on the same subnet. <br>
 This in effect creates the effect from the perspective of the VXLAN interfaces as if they are physically connected at Layer 2. <br>
