@@ -9,3 +9,4 @@ Projects to explore internal workings of Linux systems
 **investigate_stack_arm64** : Explores how the program stack is used during a function call and return on an ARM 64-bit architecture <br>
 **investigate_vxlan** : Setup a VXLAN communication and explore the packet structure <br> 
 **investigate_threads** : Observing how threads are represented in the kernel and the effect of signals on them. <br> 
+**investigate_coredumps** : Observing how to generate and use core dumps for user space programs. <br> 
