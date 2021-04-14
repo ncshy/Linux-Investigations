@@ -1,3 +1,4 @@
+CFLAGS=-g
 segfault:   segfault.o
 
 clean:

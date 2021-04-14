@@ -59,7 +59,7 @@ $ kill -3 <PID>
 Here 3 is the signal number corresponding to SIGQUIT. <br>
 The core file was finally generated in the same directory as my source code, however it was empty. <br>
 
-I went back to the apport program and looked at the write\_user\_coredump function. Sure enough right at the beginning, I see:
+I went back to the apport program and looked at the write\_user\_coredump function. Right at the beginning, I see:
 ```
 # three cases:
 # limit == 0: do not write anything
