@@ -10,3 +10,4 @@ Projects to explore internal workings of Linux systems
 **investigate_vxlan** : Setup a VXLAN communication and explore the packet structure <br> 
 **investigate_threads** : Observing how threads are represented in the kernel and the effect of signals on them. <br> 
 **investigate_coredumps** : Observing how to generate and use core dumps for user space programs. <br> 
+**investigate_staticlibs** : Exploring the difference in memory map of a program that is statically and dynamically linked. <br> 
