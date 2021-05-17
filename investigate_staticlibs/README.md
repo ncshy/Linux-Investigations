@@ -4,7 +4,7 @@
 
 The primary purpose of the code, is to:
 1) Obtain the process ID of itself
-2) Construct a shell command "cat /proc/<pid>/maps"
+2) Construct a shell command "cat /proc/\<pid\>/maps"
 3) Execute it.
 
 # Shared libraries
