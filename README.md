@@ -12,3 +12,4 @@ Projects to explore internal workings of Linux systems
 **investigate_coredumps** : Observing how to generate and use core dumps for user space programs. <br> 
 **investigate_staticlibs** : Exploring the difference in memory map of a program that is statically and dynamically linked. <br> 
 **investigate_ioctl** : Exploring how the ioctl call is used and the kernel stack trace for 2 codes, one handled by the kernel, and the other handled by the network device driver. <br> 
+**investigate_cow** : Exploring the Copy on Write mechanism in action <br> 
