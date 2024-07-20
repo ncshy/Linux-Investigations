@@ -9,7 +9,8 @@ First, we need to understand 2 important type of packet descriptors: <br>
 
 This is a 16B descriptor. When a checksum offload should be done by the NIC hardware, this descriptor provides context about the operations to be performed and any additional directions if needed. <br>
 
-[!Advanced transmit context descriptor](adv_ctxt_desc.png)
+The descriptor format images have been obtained from Intel's 82599 documentation <br>
+[Advanced transmit context descriptor](adv_ctxt_desc.png)
 
 ### Important fields:
 
@@ -17,6 +18,7 @@ TUCMD - 11 bit field <br>
 TUCMD.IPV4 - 2nd bit <br>
 1. If 0, it indicates IPv6 is L3
 2. If 1, it indicates IPv4 is L3
+
 TUCMD.L4T - 3rd and 4th bit representing L4 <br>
 1. 00 - UDP 
 2. 01 - TCP
@@ -32,7 +34,7 @@ DEXT - 1 bit field; Set to 1 for advanced descriptor format
 This is a 16B descriptor. The first 8B hold the Bus address of the packet to be DMA'ed from system memory to NIC internal buffer. <br>
 The second 8B has a special meaning.
 
-[!Advanced transmit data descriptor](adv_tx_data_desc.png)
+[Advanced transmit data descriptor](adv_tx_data_desc.png)
 
 ### Important fields 
 
@@ -41,7 +43,7 @@ The second 8B has a special meaning.
 3. DCMD - 8 bit field
 	1. TSE (bit 7) - If 0, then only header checksums should be calculated by the hardware
 	2. DEXT (bit 5) - If 1, indicates advanced descriptor format
-	3. IFCS (bit 1) - Set to 1, if header checksum should be calculated by the hardware
+	3. IFCS (bit 1) - Set to 1, if Ethernet header checksum should be calculated by the hardware
 4. POPTS - 6 bit field; Checksums are calculated per packet, and enabled in this field of the data descriptor
 	1. TXSM (bit 1) - If 1, L4 checksum should be calculated by HW.
 	2. IXSM (bit 0) - If 1, L3 checksum should be calculated by HW (does not support IPv6).
@@ -145,12 +147,20 @@ static int ixgbe_tx_map(struct ixgbe_ring *tx_ring,
 	struct sk_buff *skb = first->skb;
 	struct ixgbe_tx_buffer *tx_buffer;
 	union ixgbe_adv_tx_desc *tx_desc;
+	u32 cmd_type = ixgbe_tx_cmd_type(skb, tx_flags);	--> Set DCMD.DEXT AND DCMD.IFCS to 1; Set DTYP to 0x3
+	u16 i = tx_ring->next_to_use;
+
+	ixgbe_tx_olinfo_status(tx_desc, tx_flags, skb->len - hdr_len);	-->	Set POPTS.TXSM and POPTS.IXSM to 1
 
 	size = skb_headlen(skb);	--> Returns total packet size, for non SKB scattered packets
 	data_len = skb->data_len;	--> data_len is 0 for non SKB scattered packets
 
 	dma = dma_map_single(tx_ring->dev, skb->data, size, DMA_TO_DEVICE);		--> Map the data buffer to a DMA address, and set the transfer direction from Host to NIC device
 	
+	/* write last descriptor with RS and EOP bits */
+	cmd_type |= size | IXGBE_TXD_CMD;
+	tx_desc->read.cmd_type_len = cpu_to_le32(cmd_type);		--> Update TX advanced data desc with previously mentioned settings.
+
 	/* set the timestamp */
 	first->time_stamp = jiffies;
 
@@ -164,8 +174,8 @@ static int ixgbe_tx_map(struct ixgbe_ring *tx_ring,
 
 }
 ```
-At this point, both the context descriptor and transmit data descriptor have been filled, after the packet data buffer has been mapped to DMA memory and control of the packet handed to hardware.
-The hardware will conduct the hardware checksum offloads on the packet based on the information provided in the context_desc.
+At this point, both the context descriptor and transmit data descriptor have been filled, while the packet data buffer has been mapped to DMA memory. The control of the packet descriptor is handed over to hardware.
+The hardware will conduct the hardware checksum offloads on the packet based on the information provided in the descriptors.
 
 Below are the important data structures referenced in the driver code <br>
 ```
