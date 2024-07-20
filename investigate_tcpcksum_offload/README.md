@@ -9,7 +9,7 @@ First, we need to understand 2 important type of packet descriptors: <br>
 
 This is a 16B descriptor. When a checksum offload should be done by the NIC hardware, this descriptor provides context about the operations to be performed and any additional directions if needed. <br>
 
-[!alt text](adv_ctxt_desc.png)
+[!Advanced transmit context descriptor](adv_ctxt_desc.png)
 
 ### Important fields:
 
@@ -32,7 +32,7 @@ DEXT - 1 bit field; Set to 1 for advanced descriptor format
 This is a 16B descriptor. The first 8B hold the Bus address of the packet to be DMA'ed from system memory to NIC internal buffer. <br>
 The second 8B has a special meaning.
 
-[!alt text](adv_tx_data_desc.png)
+[!Advanced transmit data descriptor](adv_tx_data_desc.png)
 
 ### Important fields 
 
