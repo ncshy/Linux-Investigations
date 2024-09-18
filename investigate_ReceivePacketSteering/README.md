@@ -23,12 +23,12 @@ struct softnet_data {			# Per-CPU data structure
 
 ```
 
-NAPI devices (devices that use polling over per packet interrupts) use poll_list <br>
-During interrupt context (i.e, when the packet received on the NIC has been DMA'ed into system memory), then the NAPI capable device interface is added to the list. <br>
-During the softirq context, the poll_list is traversed, and each device on the list has a napi_poll_func, which is invoked. <br>
-This napi poll function of the device processes all the packets in the queue until a certain time or packet limit has been reached. <br> 
+1. NAPI devices (devices that use polling over per packet interrupts) use poll_list <br>
+2. During interrupt context (i.e, when the packet received on the NIC has been DMA'ed into system memory), then the NAPI capable device interface is added to the CPU's poll_list. <br>
+3. During the softirq context, the poll_list is traversed, and each device on the list has a napi_poll_func, which is invoked. <br>
+4. This napi poll function of the device processes all the packets in the queue until a certain time or packet limit has been reached. <br> 
 
-Non-NAPI devices (that use per packet interrupts) add packets to a fictitious device called the backlog device. This device has a queue (input_pkt_queue) which holds packets from all such devices/queues. <br>
+Non-NAPI devices (that use per packet interrupts) add packets to a fictitious device called the backlog device. This device has a queue (input_pkt_queue) which holds packets from all such non-NAPI devices/queues. <br>
 
 ### Getting to the RPS implementation ###
 
@@ -65,7 +65,7 @@ netif_receive_skb()
 
 Now when the selected CPU's softirq context is in effect, the backlog device's input_pkt_queue is traversed and each packet is further processed on that selected CPU, thus *effectively achieving the end goal of splitting the set of packets into subsets across multiple CPU cores*. <br>
 
-As a final note, for non-NAPI devices using RPS, netif_rx is invoked during interrupt context and it can select the RPS cpu and add it to the backlog_dev; which is then run later, in softirq context. <br>
+As a final note, for non-NAPI devices using RPS, netif_rx is invoked during interrupt context. netif_rx can select the RPS cpu and add it to the selected CPU's backlog_dev; This is then run later, in softirq context. <br>
 
 ```
 Legend:
