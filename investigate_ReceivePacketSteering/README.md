@@ -3,8 +3,11 @@
 ## What is RPS? ##
 
 For high performance networking, per packet processing in the CPU needs to be very fast. One important way of achieving this when the CPU speed is fixed, is through parallel processing of packets. i.e, Dividing a set of packets into subsets and processing each subset on a CPU core. Since it is dealing with fewer packets, there is more time available for per packet processing <br>
+
 Most modern NICs have multiple queues on network port to receive and transmit packets, and each queue can be assigned to a CPU core. In effect generally, if a packet hits queue0, it is processed by core0; queue1 by core1 etc. <br>
-Therefore the queues act as our subset and the mechanism to divide the set of packets into subsets is done by moving packets into each of these queues. This is called Receive Side Scalingg (RSS) and is done in the NIC hardware. However, not all NICs might support RSS, and thus the implementation of this same idea on the software is called Receive Packet Steering (RPS). <br>
+
+Therefore the queues act as our subset and the mechanism to divide the set of packets into subsets is done by moving packets into each of these queues. This is called Receive Side Scalingg (RSS) and is done in the NIC hardware. <br>
+However, not all NICs might support RSS, and thus the implementation of this same idea on the software is called Receive Packet Steering (RPS). <br>
 
 ## How is RPS implemented in the Linux Kernel ##
 
@@ -45,10 +48,10 @@ netif_receive_skb()
 		#ifdef CONFIG_RPS
 		    if (static_branch_unlikely(&rps_needed)) {
 		        struct rps_dev_flow voidflow, *rflow = &voidflow;
-		        int cpu = get_rps_cpu(skb->dev, skb, &rflow);		# Cpu is selected based on the flow
+		        int cpu = get_rps_cpu(skb->dev, skb, &rflow);		### Cpu is selected based on the flow
 		
 		        if (cpu >= 0) {
-		            ret = enqueue_to_backlog(skb, cpu, &rflow->last_qtail);		# Packet is added to the backlog device's input_pkt_queue on the selected CPU
+		            ret = enqueue_to_backlog(skb, cpu, &rflow->last_qtail);		### Packet is added to the backlog device's input_pkt_queue on the selected CPU
 		            rcu_read_unlock();
 		            return ret;
 		        }
@@ -60,7 +63,7 @@ netif_receive_skb()
 
 ```
 
-Now when the selected CPU's softirq context is in effect, the backlog device's input_pkt_queue is traversed and each packet is further processed on that selected CPU, thus effectively achieving the end goal of splitting the set of packets into subsets across multiple CPU cores. <br>
+Now when the selected CPU's softirq context is in effect, the backlog device's input_pkt_queue is traversed and each packet is further processed on that selected CPU, thus *effectively achieving the end goal of splitting the set of packets into subsets across multiple CPU cores*. <br>
 
 As a final note, for non-NAPI devices using RPS, netif_rx is invoked during interrupt context and it can select the RPS cpu and add it to the backlog_dev; which is then run later, in softirq context. <br>
 
@@ -79,11 +82,11 @@ netif_rx(struct sk_buff *skb)
 		
 		        rcu_read_lock();
 		
-		        cpu = get_rps_cpu(skb->dev, skb, &rflow);	# Cpu is selected based on the flow
+		        cpu = get_rps_cpu(skb->dev, skb, &rflow);	### Cpu is selected based on the flow
 		        if (cpu < 0)
 		            cpu = smp_processor_id();
 		
-		        ret = enqueue_to_backlog(skb, cpu, &rflow->last_qtail); # Packet is added to the backlog device's input_pkt_queue on the selected CPU
+		        ret = enqueue_to_backlog(skb, cpu, &rflow->last_qtail);     ### Packet is added to the backlog device's input_pkt_queue on the selected CPU
 		
 		        rcu_read_unlock();
 		    } else
