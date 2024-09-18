@@ -15,3 +15,4 @@ Projects to explore internal workings of Linux systems
 **investigate_cow** : Exploring the Copy on Write mechanism in action <br> 
 **investigate_tcpcksum_offload** : Understand how TCP/UDP/IP hardware checksum offload is enabled by a network device driver<br>
 **investigate_recursive_macros** : Explore if C macros can be used to create infinite recursions. 
+**investigate_ReceivePacketSteering** : Explore how a parallel processing concept is implemented in Linux
