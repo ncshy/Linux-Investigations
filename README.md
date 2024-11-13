@@ -14,6 +14,7 @@ Projects to explore internal workings of Linux systems
 **investigate_ioctl** : Exploring how the ioctl call is used and the kernel stack trace for 2 codes, one handled by the kernel, and the other handled by the network device driver. <br> 
 **investigate_cow** : Exploring the Copy on Write mechanism in action <br> 
 **investigate_tcpcksum_offload** : Understand how TCP/UDP/IP hardware checksum offload is enabled by a network device driver<br>
-**investigate_recursive_macros** : Explore if C macros can be used to create infinite recursions. 
-**investigate_ReceivePacketSteering** : Explore how a parallel processing concept is implemented in Linux
-**investigate_VlanStripping** : Explore how the driver works with the hardware to obtain VLAN tag information after a VLAN strip operation
+**investigate_recursive_macros** : Explore if C macros can be used to create infinite recursions. <br>
+**investigate_ReceivePacketSteering** : Explore how a parallel processing concept is implemented in Linux <br>
+**investigate_VlanStripping** : Explore how the driver works with the hardware to obtain VLAN tag information after a VLAN strip operation <br>
+**investigate_Promiscuous_mode** : Explore how a packet capture program instructs the hardware to allow for listening on all frames on the wire. <br>
