@@ -18,3 +18,4 @@ Projects to explore internal workings of Linux systems
 **investigate_ReceivePacketSteering** : Explore how a parallel processing concept is implemented in Linux <br>
 **investigate_VlanStripping** : Explore how the driver works with the hardware to obtain VLAN tag information after a VLAN strip operation <br>
 **investigate_Promiscuous_mode** : Explore how a packet capture program instructs the hardware to allow for listening on all frames on the wire. <br>
+**investigate_bitfield_space** : Explore how much space in memory a 'C' bitfield implementation takes<br>
