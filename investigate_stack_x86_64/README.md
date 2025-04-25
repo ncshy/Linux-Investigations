@@ -1,7 +1,7 @@
 # Investigations into a stack call
 
 **Investigating stack handling during a function call, on an x86-64 architecture.** <br>
-The following code was obtained by, disassembling the executable generated from the call\_afunc.c, using the GNU tool 'objdump'.
+The following code was obtained by, disassembling the executable generated in AT&T format, from the call\_afunc.c using the GNU tool 'objdump'.
 ```
 0000000000001129 <add_vars>:
     1129:	f3 0f 1e fa          	endbr64
@@ -91,7 +91,7 @@ As can be seen, either 'rsp' or 'rbp' can be used as a reference point to addres
     1161:	89 d6                	mov    %edx,%esi
     1163:	89 c7                	mov    %eax,%edi
 ```
-Copy the values as arguments to the function call. In this case using 2 registers(esi and edi).
+Copy the values as arguments to the function call. In this case using edi holds the 1st argument, and esi the 2nd argument.
 
 ```
     1165:	e8 bf ff ff ff       	callq  1129 <add_vars>
@@ -137,7 +137,8 @@ Thus, the next instruction will be at adress 116a.
 ```
 eax register holds the return value from the add\_vars function. <br>
 This is moved to location -0x8(%rbp), overwriting the previous value of variable 'a', which is what we expect since (a = add\_vars(a, b)). <br>
-Clear the value in the eax register. <br>
+We are not doing anything with the return value <br>
+Clear the value in the eax register since the main function has to return 0. <br> 
 
 These are the important instructions that display the stack handling part of the program. <br>
 Upon a function call, it saves the next instruction pointer, and passes arguments to the called function. <br>
