@@ -58,12 +58,12 @@ The 4 variables are stored in the stack, with values 20,10,5 and 2. <br>
 ```
 The value of a is moved to register eax and then compared with the value of 'b' at rbp-0xc. <br>
 If a >= b, then the condition fails an there is jump to address 11a4. <br>
-**Thus bypassing all the other checks and short circuiting the operation. ** <br>
 ```
     1171:	8b 45 f0             	mov    eax,DWORD PTR [rbp-0x10]
     1174:	3b 45 f4             	cmp    eax,DWORD PTR [rbp-0xc]
     1177:	7d 2b                	jge    11a4 <main+0x5b>
 ```
+**Thus bypassing all the other checks and short circuiting the operation.** <br>
 
 The value of a is passed as 2nd argument and the format string as the 1st argument to the function printf() <br>
 ```
