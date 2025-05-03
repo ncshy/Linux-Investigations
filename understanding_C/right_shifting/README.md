@@ -72,3 +72,10 @@ The values in the 2 variables are then printed out through the printf statements
     1198:	e8 b3 fe ff ff       	call   1050 <printf@plt>
 
 ```
+
+The output of both variables are: <br>
+```
+a is 0xc000
+b is 0x4000
+```
+
