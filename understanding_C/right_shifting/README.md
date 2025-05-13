@@ -1,4 +1,4 @@
-# Right shifts for siged and unsigned numbers
+# Right shifts for signed and unsigned numbers
 
 The code assigns the same value to 2 variables of size 2 Bytes. <br>
 
