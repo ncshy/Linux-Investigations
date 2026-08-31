@@ -4,6 +4,7 @@ Projects to explore internal workings of Linux systems
 ## Network specific
 **investigate_vxlan** : Setup a VXLAN communication and explore the packet structure <br> 
 **investigate_tcpcksum_offload** : Understand how TCP/UDP/IP hardware checksum offload is enabled by a network device driver<br>
+**investigate_checksum_terminology** : Understand what the different CHECKSUM\_XXX fields mean with code examples. <br>
 **investigate_ReceivePacketSteering** : Explore how a parallel processing concept is implemented in Linux <br>
 **investigate_VlanStripping** : Explore how the driver works with the hardware to obtain VLAN tag information after a VLAN strip operation <br>
 **investigate_Promiscuous_mode** : Explore how a packet capture program instructs the hardware to allow for listening on all frames on the wire. <br>
