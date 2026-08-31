@@ -44,7 +44,7 @@ include/linux/skbuff.h  (line 4256)
 ```
 
 An example of CHECKSUM\_COMPLETE can be found in:
-``
+```
 drivers/net/ethernet/mellanox/mlx4/en_rx.c ---> The driver reads the checksum value and updates the skb->csum field
 ```
 
@@ -53,7 +53,7 @@ An example of CHECKSUM\_UNNECESSARY can be found in:
 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  --> CHECKSUM_UNNECESSARY set if packet is TCP/UDP or SCTP, whose checksum validation is supported on Intel 82599 NICs.
 ```
 
-CHECKSUM\_PARTIAL on the other hand, has more use on the Tx side of network data transmission. Here during a Hardware checksum offload, the software stack calculates only the pseudo header checksum, and passes this data to the driver. The driver in turn sets up the required offload context for the device, while passing the **partial** checksum. During this operation, the network stack sets the skb->ip_summed field is set to CHECKSUM\_PARTIAL. Note, that the direction of messaging is different. It is the software stack informing the driver that only a partial checksum has been calculated for this packet. The rest has to be calculated by the hardware device, or the network driver itself.
+CHECKSUM\_PARTIAL on the other hand, has more use on the Tx side of network data transmission. Here during a Hardware checksum offload, the software stack calculates only the pseudo header checksum, and passes this data to the driver. The driver in turn sets up the required offload context for the device, while passing the **partial** checksum. During this operation, the network stack sets the skb->ip\_summed field is set to CHECKSUM\_PARTIAL. Note, that the direction of messaging is different. It is the software stack informing the driver that only a partial checksum has been calculated for this packet. The rest has to be calculated by the hardware device, or the network driver itself.
 
 An example of CHECKSUM\_PARTIAL can be found in:
 ```
