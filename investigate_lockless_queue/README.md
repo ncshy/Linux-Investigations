@@ -10,7 +10,7 @@ We will go through the queue usage and mechanics step by step with the help of c
 
 **We consider FillQ first**
 # Step 1
-![Alt text](spsc_1.png "Initial State")
+![FillQ Initial State](spsc_state1.png "Initial State")
 ```
 In the Initial state, we have an empty FillQ denoted by free1 to free9. There is a consumer and producer pointer for this queue, reference by the term 'True ring state'.
 
@@ -18,9 +18,9 @@ Similarly there is the userspace local consumer and producer pointers known as '
 ```
 
 # Step 2
-![Alt text](spsc_2.png "Producer for the FillQ")
-```
-The function xsk_ring_prod__reserve(fq) is used to move the cached_cons from 0 to cached_cons + queue_size. The relevance of this action will be understood at a later step.
+![Producer for the FillQ](spsc_state2.png "Producer for the FillQ")
+The function xsk\_ring\_prod\_\_reserve(fq) is used to move the cached\_cons from 0 to cached\_cons + queue\_size. The relevance of this action will be understood at a later step.
+```C
 
 static inline __u32 xsk_ring_prod__reserve(struct xsk_ring_prod *prod, __u32 nb, __u32 *idx)
 {
@@ -66,10 +66,10 @@ static inline __u32 xsk_prod_nb_free(struct xsk_ring_prod *r, __u32 nb)
 ```
 # Step 3
 
-![Alt text](spsc_3.png "Fill addresses in the FillQ")
+![Fill addresses in the FillQ](spsc_state3.png "Fill addresses in the FillQ")
 
+xsk\_ring\_prod\_\_fill\_addr() is used to fill the FillQ descriptors with the correct UMEM frame addresses.
 ```C
-xsk_ring_prod__fill_addr() is used to fill the FillQ descriptors with the correct UMEM frame addresses.
 
 static inline __u64 *xsk_ring_prod__fill_addr(struct xsk_ring_prod *fill,
                                               __u32 idx)
@@ -82,17 +82,16 @@ static inline __u64 *xsk_ring_prod__fill_addr(struct xsk_ring_prod *fill,
 
 
 ```
-The above image shows the state after the last part of xsk\_ring\_prod\_\_reserve and the whole of xsk\_ring\_prod\_\_fill\_addr have executed.At this juncture, the cached\_prod and cached\_cons have moved forward by the queue size and all the descriptors have entries in them.
+The above image shows the state after the last part of xsk\_ring\_prod\_\_reserve and the whole of xsk\_ring\_prod\_\_fill\_addr have executed. At this juncture, the cached\_prod and cached\_cons have moved forward by the queue size and all the descriptors have entries in them.
 
 # Step 4
 
-![Alt text](spsc_4.png "Notify the kernel consumer")
+![Update the true producer](spsc_state4.png "Update the true producer")
 
-```
-xsk_ring_prod__submit() is used to do 2 important things:
+xsk\_ring\_prod\_\_submit() is used to do 2 important things: <br>
 1. Update the true prod pointer
 2. Signal to the kernel that the FillQ is ready for consumption
-
+```C
 static inline void xsk_ring_prod__submit(struct xsk_ring_prod *prod, __u32 nb)
 {
         /* Make sure everything has been written to the ring before indicating
@@ -102,8 +101,8 @@ static inline void xsk_ring_prod__submit(struct xsk_ring_prod *prod, __u32 nb)
 }
 
 ```
-The libbpf\_smp\_store\_release macro is defined below:
-```
+The libbpf\_smp\_store\_release macro is defined below: <br>
+```C
 # define libbpf_smp_store_release(p, v)                                 \
         do {                                                            \
                 asm volatile("" : : : "memory");                        \ # The "memory" in the clobber field acts as a write memory barrier.
@@ -116,15 +115,14 @@ Now, it is the kernel's turn to consume the FillQ.
 
 # Step 5
 
-![Alt text](spsc_5.png "Kernel begins consumption INITIAL STATE")
+![Kernel begins consumption INITIAL STATE](spsc_state5.png "Kernel begins consumption INITIAL STATE")
 
 The real 'cons' and 'prod' values of the FillQ have been updated based on the previous steps initiated by the user. <br>
 The cached\_cons and cached\_prod variables of the kernel local state are both at 0 in the INITIAL STATE. <br>
-The driver code invokes the function xp\_alloc() through the below call chain:
+The driver code invokes the function xp\_alloc() through the below call chain: <br>
 
-```
-For Intel ice driver: drivers/net/ethernet/intel/ice/ice_base.c
-
+For Intel ice driver: drivers/net/ethernet/intel/ice/ice\_base.c
+```C
 int ice_vsi_cfg_rxq()
 	--->  ice_alloc_rx_bufs_zc()
 		---> xsk_buff_alloc()
@@ -137,7 +135,7 @@ int ice_vsi_cfg_rxq()
 
 xskq\_cons\_peek\_addr\_unchecked is the important function which drives the access of the lockless FillQ forward. <br>
 
-![Alt text](spsc_6.png "Kernel updates it's local cached pointers")
+![Kernel updates it's local cached pointers](spsc_state6.png "Kernel updates it's local cached pointers")
 ```C
 static inline bool xskq_cons_peek_addr_unchecked(struct xsk_queue *q, u64 *addr)
 {
@@ -151,14 +149,14 @@ static inline bool xskq_cons_peek_addr_unchecked(struct xsk_queue *q, u64 *addr)
 
 ```
 # Step 7 and 8 
-![Alt text](spsc_7.png "Kernel consumes the FillQ descriptors")
-![Alt text](spsc_8.png "Kernel consumes the FillQ descriptors")
+![Kernel consumes the FillQ descriptors](spsc_state7.png "Kernel consumes the FillQ descriptors")
+![Kernel consumes ALL the FillQ descriptors](spsc_state8.png "Kernel consumes ALL the FillQ descriptors")
 
 As mentioned above, in xskq\_cons\_peek\_addr\_unchecked(), the FillQ descriptor is accessed and the UMEM frame address is returned to the kernel. <br>
 The kernel then obtains the DMA address of this returned virtual address, and fills in the HW descriptor of the Network card. <br>
 
 # Step 9
-![Alt text](spsc_9.png "Kernel updates the true FillQ cons pointer")
+![Kernel updates the true FillQ cons pointer](spsc_state9.png "Kernel updates the true FillQ cons pointer")
 
 As mentioned earlier in 'Step 6', the xskq\_cons\_peek\_addr\_unchecked() calls xskq\_cons\_get\_entries(), which will update the true cons pointer with the cached cons value whenever cached\_prod == cached\_cons, and so the true cons value moves forward by queue\_size, and due to wrap around, the state of the FillQ is the same as Step 1.
 
