@@ -10,7 +10,7 @@ We will go through the queue usage and mechanics step by step with the help of c
 
 **We consider FillQ first**
 # Step 1
-![FillQ Initial State](spsc_state1.png "Initial State")
+![FillQ Initial State](spsc_state1.png)
 ```
 In the Initial state, we have an empty FillQ denoted by free1 to free9. There is a consumer and producer pointer for this queue, reference by the term 'True ring state'.
 
