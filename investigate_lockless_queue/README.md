@@ -306,5 +306,5 @@ Once all the descriptors have been consumed, a call to xsk\_ring\_cons\_\_releas
 
 ## Main takeaway
 
-The above sequence of steps shows how a producer and consumer, can access a shared data structure (FillQ, RxQ) without locks and still maintain concurrency. <br>
-**Using individual local pointers for updates, and only reading/writing the shared pointers at specific junctures, with memory barrier support, the lockless queue implementation is successfully implemented.**
+The above sequence of steps shows how a producer and consumer can access a shared data structure (FillQ, RxQ) without locks and still maintain concurrency. <br>
+**Using individual local pointers for updates, and only reading/writing the shared pointers at specific junctures with memory barrier support, the lockless queue implementation is successfully implemented.**
