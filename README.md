@@ -15,6 +15,9 @@ Projects to explore internal workings of Linux systems
 **investigate_coredumps** : Observing how to generate and use core dumps for user space programs. <br> 
 **investigate_cow** : Exploring the Copy on Write mechanism in action <br> 
 
+## Data structure specific
+**investigate_lockless_queue** : Explore how lockless queues are implemented for a Single Producer Single Consumer AF\_XDP socket. <br>
+
 ## System specific
 **investigate_stack_x86_64** : Explores how the program stack is used during a function call and return on an x86\_64 architecture <br>
 **investigate_stack_arm32** : Explores how the program stack is used during a function call and return on an ARM 32-bit architecture <br>
