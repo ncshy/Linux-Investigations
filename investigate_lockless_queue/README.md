@@ -160,4 +160,151 @@ The kernel then obtains the DMA address of this returned virtual address, and fi
 
 As mentioned earlier in 'Step 6', the xskq\_cons\_peek\_addr\_unchecked() calls xskq\_cons\_get\_entries(), which will update the true cons pointer with the cached cons value whenever cached\_prod == cached\_cons, and so the true cons value moves forward by queue\_size, and due to wrap around, the state of the FillQ is the same as Step 1.
 
+**We will now consider the RxQ**
 
+# Step 1
+![RXQ initial state](spsc_state10.png "RXQ initial state")
+
+The initial state of the RxQ has the true cons and prod pointers at 0. The kernel's local pointers, cached\_cons and cached\_prod are also at 0 initially. <br>
+
+# Step 2
+![XDP\_REDIRECT fills up the RxQ](spsc_state11.png "XDP_REDIRECT fills up the RxQ")
+![XDP\_REDIRECT continues to fill up the RxQ](spsc_state12.png "XDP_REDIRECT continues to fill up the RxQ")
+
+For an AF\_XDP socket, when a packet arrives at the network interface, an XDP program is executed and the final decision is XDP\_REDIRECT. <br>
+
+For this REDIRECT condition, the call chain is as follows, for the Intel ice driver:
+```C
+        act = bpf_prog_run_xdp(xdp_prog, xdp);
+
+        if (likely(act == XDP_REDIRECT)) {
+                err = xdp_do_redirect(rx_ring->netdev, xdp, xdp_prog);
+                if (err)
+                        goto out_failure;
+                return ICE_XDP_REDIR;
+        }
+
+```
+The bpf\_prog\_run\_xdp() will execute the XDP program on the XDP frame.
+
+When the decision is XDP\_REDIRECT, the function invokes xdp\_do\_redirect().
+
+The call chain continues as follows:
+```C
+	xdp_do_redirect
+		--->  __xdp_do_redirect_xsk()
+			---> __xsk_map_redirect()
+				---> xsk_rcv()
+					---> __xsk_rcv_zc()
+						
+```
+
+The \_\_xsk\_rcv\_zc() is of importance to lockless queue access. The code is shown below:
+```C
+static int __xsk_rcv_zc(struct xdp_sock *xs, struct xdp_buff *xdp, u32 len)
+{       
+        struct xdp_buff_xsk *xskb = container_of(xdp, struct xdp_buff_xsk, xdp);
+        u64 addr;
+        int err;
+
+        addr = xp_get_handle(xskb);
+        err = xskq_prod_reserve_desc(xs->rx, addr, len);
+        if (err) {
+                xs->rx_queue_full++;
+                return err;
+        }
+
+        xp_release(xskb);
+        return 0;
+}
+```
+
+The xskq\_prod\_reserve\_desc() fills up the RX queue and updates the Kernel's cached\_prod.
+```C
+static inline int xskq_prod_reserve_desc(struct xsk_queue *q,
+                                         u64 addr, u32 len)
+{
+        struct xdp_rxtx_ring *ring = (struct xdp_rxtx_ring *)q->ring;
+        u32 idx;
+        
+        if (xskq_prod_is_full(q))
+                return -ENOSPC;
+                
+        /* A, matches D */
+        idx = q->cached_prod++ & q->ring_mask;
+
+        ring->desc[idx].addr = addr;
+        ring->desc[idx].len = len;
+        
+        return 0;
+}
+```
+
+# Step 3
+![Update the RxQ true prod](spsc_state13.png "Update the RxQ true prod")
+
+When the NAPI poll loop exits, it invokes xdp\_do\_flush(). The call chain for this function is as follows:
+```C
+	xdp_do_flush()
+		---> __xsk_map_flush()
+			---> xsk_flush()
+				---> xskq_prod_submit()
+					---> __xskq_prod_submit()
+						---> smp_store_release(&q->ring->producer, idx);
+```
+The last function in the call chain updates the true prod value with the cached\_prod value.
+
+# Step 4
+![RxQ userspace inital state](spsc_state14.png "RxQ userspace initial state")
+
+Once the FillQ has been filled by the userspace, it waits for packets to arrive at it's RxQ. It does this poll using the function xsk\_ring\_cons\_\_peek(). <br>
+
+# Step 5
+![Update the userspace cached\_prod](spsc_state15.png "Update the userspace cached_prod")
+
+The xsk\_ring\_cons\_\_peek() calls xsk\_cons\_nb\_avail(), whose definition is shown below:
+```C
+static inline __u32 xsk_cons_nb_avail(struct xsk_ring_cons *r, __u32 nb)
+{
+        __u32 entries = r->cached_prod - r->cached_cons;
+        static __u64 counter = 0;
+
+        if (entries == 0) {
+                r->cached_prod = libbpf_smp_load_acquire(r->producer);
+                entries = r->cached_prod - r->cached_cons;
+        }
+        
+        return (entries > nb) ? nb : entries;
+}
+```
+Since cached\_cons and cached\_prod are 0, the entries variable will also be 0, and this function updates the cached\_prod with the true prod.
+
+It then returns the number of filled entries currently in the RxQ.
+
+# Step 6
+![Consume the RxQ entries](spsc_state16.png "Consume the RxQ entries")
+
+For the number of available entries(rcvd), read the address from the RxQ descriptor and access the packet metadata and packet data. <br>
+```C
+for (i = 0; i < rcvd; i++) {
+                u64 addr = xsk_ring_cons__rx_desc(&xsk->rx, idx_rx)->addr;
+                u32 len = xsk_ring_cons__rx_desc(&xsk->rx, idx_rx++)->len;
+                u64 orig = xsk_umem__extract_addr(addr);
+
+                addr = xsk_umem__add_offset_to_addr(addr);
+                char *pkt = xsk_umem__get_data(xsk->xsk_umem_i->buffer, addr);
+
+                *xsk_ring_prod__fill_addr(&xsk->xsk_umem_i->fq, idx_fq++) = orig;
+        }
+```
+The final call to xsk\_ring\_prod\_\_fill\_addr() is to refill the FillQ after consuming the packet. 
+
+# Step 7
+![Update true cons value of the RxQ](spsc_state17.png "Update the true cons value of the RxQ")
+
+Once all the descriptors have been consumed, a call to xsk\_ring\_cons\_\_release() will update the true cons value with the cached\_cons value. 
+
+## Main takeaway
+
+The above sequence of steps shows how a producer and consumer, can access a shared data structure (FillQ, RxQ) without locks and still maintain concurrency. <br>
+**Using individual local pointers for updates, and only reading/writing the shared pointers at specific junctures, with memory barrier support, the lockless queue implementation is successfully implemented.**
