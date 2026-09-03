@@ -8,7 +8,7 @@ The RxQ has the Kernel as the producer and the userspace as the consumer.
 
 We will go through the queue usage and mechanics step by step with the help of code blocks and diagrams. <br>
 
-**We consider FillQ first**
+## We consider FillQ first
 # Step 1
 ![FillQ Initial State](spsc_state1.png)
 ```
@@ -160,7 +160,7 @@ The kernel then obtains the DMA address of this returned virtual address, and fi
 
 As mentioned earlier in 'Step 6', the xskq\_cons\_peek\_addr\_unchecked() calls xskq\_cons\_get\_entries(), which will update the true cons pointer with the cached cons value whenever cached\_prod == cached\_cons, and so the true cons value moves forward by queue\_size, and due to wrap around, the state of the FillQ is the same as Step 1.
 
-**We will now consider the RxQ**
+## We will now consider the RxQ
 
 # Step 1
 ![RXQ initial state](spsc_state10.png "RXQ initial state")
