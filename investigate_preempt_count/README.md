@@ -1,7 +1,7 @@
 # Investigating the PREEMPT\_COUNT variable
 
 ## Kernel pre-emption brief:
-Linux supports Kernel preemption. As the name suggests, the current process can be pre-empted before completion by another task. <br>
+Linux supports Kernel preemption. As the name suggests, the current process executing kernel code can be pre-empted before completion by another task. <br>
 Such an arrangement allows the system to be more dynamic. An example would be as follows: <br>
 
 ```
@@ -9,7 +9,7 @@ Such an arrangement allows the system to be more dynamic. An example would be as
 
 2) Process 2 gets scheduled and runs until it's time slice is complete
 
-3) Process 3 is scheduled and an interrupt occurs, because the read has completed.
+3) Process 3 is scheduled and is executing code in the kernel, when an interrupt occurs because the read has completed.
 Upon handling the interrupt and returning from the interrupt, if preemption is enabled, the blocked process 1 can be rescheduled back on the CPU before Process 3 completes it's current sequence of operations.
 ```
 
