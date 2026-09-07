@@ -26,6 +26,9 @@ Projects to explore internal workings of Linux systems
 **investigate_staticlibs** : Exploring the difference in memory map of a program that is statically and dynamically linked. <br> 
 **investigate_ioctl** : Exploring how the ioctl call is used and the kernel stack trace for 2 codes, one handled by the kernel, and the other handled by the network device driver. <br> 
 
+## Kernel specific
+**investigate_preempt_count** : Understand what is kernel preemption and the main data field used by the implementation.
+
 ## Code specific
 **investigate_macros** : Explores the difference between macro,inline and regular functions. <br>
 **investigate_recursive_macros** : Explore if C macros can be used to create infinite recursions. <br>
