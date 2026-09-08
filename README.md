@@ -33,6 +33,7 @@ Projects to explore internal workings of Linux systems
 **investigate_macros** : Explores the difference between macro,inline and regular functions. <br>
 **investigate_recursive_macros** : Explore if C macros can be used to create infinite recursions. <br>
 **investigate_bitfield_space** : Explore how much space in memory a 'C' bitfield implementation takes<br>
+**investigate_iphdr_bitfield** : Understand portability issues involved when using bitfields in C<br>
 
 ## Assembly/C
 **understanding_C** : Using Assembly to understand the C language implementation <br>
