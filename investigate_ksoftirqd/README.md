@@ -1,8 +1,8 @@
-## How does a Kernel thread maintain the same semantics as a Softirq ?
+# How does a Kernel thread maintain the same semantics as a Softirq ?
 
 The question is how does a kernel thread behave similar to a softirq even though the thread runs in process context, and the softirq runs in atomic context. 
 
-# Brief definitions
+## Brief definitions
 
 **Softirq** : The non-urgent part of an interrupt handler. It runs in an atomic context, but importantly interrupts are enabled. <br>
 The last point is important, because it allows the system to be reactive to external events.
@@ -11,7 +11,7 @@ The last point is important, because it allows the system to be reactive to exte
 
 **ksoftirqd/CPU** : A kernel thread that exists per CPU, and is tasked with running softirq code when the system asks it to.
 
-# How is a softirq triggered ?
+## How is a softirq triggered ?
 
 We will focus on the networking code to understand how a softirq is triggered.
 
