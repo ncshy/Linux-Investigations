@@ -17,6 +17,7 @@ Projects to explore internal workings of Linux systems
 
 ## Data structure specific
 **investigate_lockless_queue** : Explore how lockless queues are implemented for a Single Producer Single Consumer AF\_XDP socket. <br>
+**investigate_llist_hlist**: Explore the difference between the Linked list and Hash bucket list implementation in the Linux Kernel, using Kernel module programs. <br>
 
 ## System specific
 **investigate_stack_x86_64** : Explores how the program stack is used during a function call and return on an x86\_64 architecture <br>
