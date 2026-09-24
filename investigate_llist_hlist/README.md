@@ -7,7 +7,23 @@ A *hash bucket list* is used to handle collisions in a hash table. When a hash f
 We have 2 programs, both of which are implemented as Linux kernel modules and which were tested on Linux Kernel 6.1.138 <br>
 
 ### Linked list
-The first program, named **llist.c** adds 4 elements onto a linked list, prints out these elements in forward (traverse\_forward()) and reverse(traverse\_backward()) directions. Finally we free the memory allocated by the module. <br>
+The first program in folder linked\_list/, named **llist.c** adds 4 elements onto a linked list, prints out these elements in forward (traverse\_forward()) and reverse(traverse\_backward()) directions. Finally we free the memory allocated by the module. <br>
+
+The 3 important structures in use, are shown below: <br>
+```
+struct list_head {
+        struct list_head *next, *prev;
+};
+
+struct hlist_head {
+        struct hlist_node *first;
+};
+
+struct hlist_node {
+        struct hlist_node *next, **pprev;
+};
+
+```
 
 Some important functions and macros are shown below: <br>
 
@@ -68,7 +84,7 @@ The main difference between a linked list and a hash bucket list, is that the he
 
 The hlist program has the same structure as the linked list program, except the embedded list element is of type *'struct hlist\_node'* and the head element is of type *'struct hlist\_head'*. The *hlist\_head* is a placeholder element that contains only a pointer to the first element of the hash bucket list. A hash table itself, is simply an array of these hlist\_head elements, and the hash function is used to converge to one of these buckets. <br>
 
-The program logic in **hlist.c** is similar to the Linked list program, but does not include reverse traversal, as that is not possible with hash bucket lists. <br>
+The program is in folder hash\_list/, and the logic in **hlist.c** is similar to the Linked list program, but does not include reverse traversal, as that is not possible with hash bucket lists. <br>
 The 4 elements are once again added to the head of the hash bucket list, and are therefore printed in reverse order, as shown in the output below: <br>
 ```
 Sep 22 00:22:51 osboxes kernel: Inside __init load function

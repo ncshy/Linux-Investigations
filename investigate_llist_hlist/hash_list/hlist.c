@@ -8,9 +8,10 @@ MODULE_LICENSE("GPL");
 
 struct my_struct {
         unsigned long data;
-        struct list_head list;
+        struct hlist_node hlist;
 };
-LIST_HEAD(head);
+
+HLIST_HEAD(head);
 
 static int insert_elems(unsigned long data)
 {
@@ -18,35 +19,29 @@ static int insert_elems(unsigned long data)
         if (!new)
                 return -1;
         new->data = data;
-        INIT_LIST_HEAD(&new->list);
+        INIT_HLIST_NODE(&new->hlist);
 
-        list_add(&new->list, &head);
+        hlist_add_head(&new->hlist, &head);
         pr_info("Successfully inserted %lu\n", data);
 
         return 0;
 }
+
 static inline void traverse_forward(void)
 {
-        struct list_head *mstr;
-        list_for_each(mstr, &head) {
-                struct my_struct *ms = list_entry(mstr, struct my_struct, list);
-                pr_info("In element %lu\n", ms->data);
-        }
-}
-
-static inline void traverse_backward(void)
-{
-        struct list_head *mstr;
-        list_for_each_prev(mstr, &head) {
-                struct my_struct *ms = list_entry(mstr, struct my_struct, list);
+        struct hlist_node *hnode;
+        hlist_for_each(hnode, &head) {
+                struct my_struct *ms = hlist_entry(hnode, struct my_struct, hlist);
                 pr_info("In element %lu\n", ms->data);
         }
 }
 
 static inline void delete_container_struct(void) {
-        struct list_head *mstr;
-        list_for_each(mstr, &head) {
-                struct my_struct *ms = list_entry(mstr, struct my_struct, list);
+        struct hlist_node *hnode;
+        struct hlist_node *hnode_next;
+        hlist_for_each_safe(hnode, hnode_next, &head) {
+                hlist_del(hnode);
+                struct my_struct *ms = list_entry(hnode, struct my_struct, hlist);
                 kfree(ms);
         }
 }
@@ -63,14 +58,15 @@ static void call_main(void)
         ret = insert_elems(300);
         if (ret < 0)
                 return;
-        ret = insert_elems(400);
+       ret = insert_elems(400);
         if (ret < 0)
                 return;
 
         traverse_forward();
-        traverse_backward();
+
         delete_container_struct();
 }
+
 static int __init load(void)
 {
         pr_info("Inside __init load function\n");
@@ -85,4 +81,3 @@ static void __exit unload(void)
 
 module_init(load);
 module_exit(unload);
-
